@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList, DrawerItem } from '@react-navigation/drawer';
 import { Ionicons } from '@expo/vector-icons';
-import { View, Text, TouchableOpacity, FlatList, StyleSheet, TextInput, RefreshControl, ScrollView, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, FlatList, StyleSheet, TextInput, RefreshControl, ScrollView, Alert } from 'react-native';
 import { AuthProvider, useAuth } from './providers';
 import { LoginScreen, LoginScreenProvider } from './modules/auth/LoginScreen';
 import { ChatScreen, ChatScreenProvider } from './modules/chat/ChatScreen';
@@ -26,11 +26,25 @@ import {
   LocationDetailScreen,
   LocationEditScreen
 } from './modules/locations';
-import { locationApi, Location } from './services/locations';
+import { Location } from './services/locations';
+import {
+  SalesOrdersProvider,
+  SalesOrdersListScreen,
+  SalesOrderDetailScreen,
+  SalesOrderEditScreen
+} from './modules/salesOrders';
+import { SalesOrder } from './services/salesOrders';
+import {
+  PurchaseOrdersProvider,
+  PurchaseOrdersListScreen,
+  PurchaseOrderDetailScreen,
+  PurchaseOrderEditScreen
+} from './modules/purchaseOrders';
+import { PurchaseOrderResponse as PurchaseOrder } from './services/purchaseOrders';
 import { colors } from './theme';
 
 const Stack = createNativeStackNavigator();
-const Tab = createBottomTabNavigator();
+const Drawer = createDrawerNavigator();
 
 const ChatTab = () => (
   <ChatScreenProvider>
@@ -497,6 +511,140 @@ const LocationsTab = () => {
   );
 };
 
+const SalesOrdersTab = () => {
+  const [currentScreen, setCurrentScreen] = React.useState<'list' | 'detail' | 'edit'>('list');
+  const [selectedOrder, setSelectedOrder] = React.useState<SalesOrder | null>(null);
+
+  const handleOrderPress = (order: SalesOrder) => {
+    setSelectedOrder(order);
+    setCurrentScreen('detail');
+  };
+
+  const handleAddOrder = () => {
+    setSelectedOrder(null);
+    setCurrentScreen('edit');
+  };
+
+  const handleEditOrder = (order: SalesOrder) => {
+    setSelectedOrder(order);
+    setCurrentScreen('edit');
+  };
+
+  const handleSaveOrder = () => {
+    setCurrentScreen('list');
+    setSelectedOrder(null);
+  };
+
+  const handleCancelEdit = () => {
+    setCurrentScreen('list');
+    setSelectedOrder(null);
+  };
+
+  const handleBack = () => {
+    setCurrentScreen('list');
+    setSelectedOrder(null);
+  };
+
+  const handleDeleteOrder = (order: SalesOrder) => {
+    setCurrentScreen('list');
+    setSelectedOrder(null);
+  };
+
+  return (
+    <SalesOrdersProvider>
+      {currentScreen === 'list' && (
+        <SalesOrdersListScreen
+          onOrderPress={handleOrderPress}
+          onAddOrder={handleAddOrder}
+        />
+      )}
+      {currentScreen === 'detail' && selectedOrder && (
+        <SalesOrderDetailScreen
+          orderId={selectedOrder.id}
+          onEdit={handleEditOrder}
+          onDelete={handleDeleteOrder}
+          onBack={handleBack}
+        />
+      )}
+      {currentScreen === 'edit' && (
+        <SalesOrderEditScreen
+          order={selectedOrder}
+          onSave={handleSaveOrder}
+          onCancel={handleCancelEdit}
+        />
+      )}
+    </SalesOrdersProvider>
+  );
+};
+
+const PurchaseOrdersTab = () => {
+  const [currentScreen, setCurrentScreen] = React.useState<'list' | 'detail' | 'edit'>('list');
+  const [selectedOrder, setSelectedOrder] = React.useState<PurchaseOrder | null>(null);
+
+  const handleOrderPress = (order: PurchaseOrder) => {
+    setSelectedOrder(order);
+    setCurrentScreen('detail');
+  };
+
+  const handleAddOrder = () => {
+    setSelectedOrder(null);
+    setCurrentScreen('edit');
+  };
+
+  const handleEditOrder = (order: PurchaseOrder) => {
+    setSelectedOrder(order);
+    setCurrentScreen('edit');
+  };
+
+  const handleSaveOrder = () => {
+    setCurrentScreen('list');
+    setSelectedOrder(null);
+  };
+
+  const handleCancelEdit = () => {
+    setCurrentScreen('list');
+    setSelectedOrder(null);
+  };
+
+  const handleBack = () => {
+    setCurrentScreen('list');
+    setSelectedOrder(null);
+  };
+
+  const handleDeleteOrder = (order: PurchaseOrder) => {
+    setCurrentScreen('list');
+    setSelectedOrder(null);
+  };
+
+  return (
+    <PurchaseOrdersProvider>
+      {currentScreen === 'list' && (
+        <PurchaseOrdersListScreen
+          onOrderPress={handleOrderPress}
+          onAddOrder={handleAddOrder}
+        />
+      )}
+      {currentScreen === 'detail' && selectedOrder && (
+        <PurchaseOrderDetailScreen
+          orderId={selectedOrder.id}
+          onEdit={handleEditOrder}
+          onDelete={handleDeleteOrder}
+          onBack={handleBack}
+        />
+      )}
+      {currentScreen === 'edit' && (
+        <PurchaseOrderEditScreen
+          order={selectedOrder}
+          onSave={handleSaveOrder}
+          onCancel={handleCancelEdit}
+        />
+      )}
+    </PurchaseOrdersProvider>
+  );
+};
+
+// No longer needed - all navigation in drawer
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -670,12 +818,139 @@ const styles = StyleSheet.create({
   },
 });
 
-const MainTabs = () => {
+// Drawer Styles
+const drawerStyles = StyleSheet.create({
+  header: {
+    backgroundColor: '#fff',
+    paddingTop: 16,
+    paddingBottom: 16,
+    paddingHorizontal: 20,
+    marginBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
+  },
+  avatarContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 0,
+  },
+  avatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  userName: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 2,
+  },
+  userRole: {
+    fontSize: 13,
+    color: '#666',
+  },
+  section: {
+    paddingTop: 8,
+  },
+  sectionTitle: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#999',
+    paddingHorizontal: 24,
+    paddingVertical: 8,
+    letterSpacing: 1,
+  },
+  footer: {
+    paddingBottom: 20,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#E0E0E0',
+    marginVertical: 12,
+    marginHorizontal: 16,
+  },
+  logoutLabel: {
+    color: '#FF3B30',
+    fontSize: 15,
+    fontWeight: '500',
+  },
+  version: {
+    fontSize: 12,
+    color: '#999',
+    textAlign: 'center',
+    marginTop: 8,
+    marginBottom: 8,
+  },
+});
+
+// Custom Drawer Content with User Header
+const CustomDrawerContent = (props: any) => {
+  const { user } = useAuth();
+
   return (
-    <Tab.Navigator
+    <DrawerContentScrollView {...props} contentContainerStyle={{ flex: 1 }}>
+      {/* User Header */}
+      <View style={drawerStyles.header}>
+        <View style={drawerStyles.avatarContainer}>
+          <View style={drawerStyles.avatar}>
+            <Ionicons name="person" size={24} color={colors.white} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={drawerStyles.userName} numberOfLines={1}>
+              {user?.email || 'User'}
+            </Text>
+            <Text style={drawerStyles.userRole}>Administrator</Text>
+          </View>
+        </View>
+      </View>
+
+      {/* Main Navigation Section */}
+      <View style={drawerStyles.section}>
+        <Text style={drawerStyles.sectionTitle}>MAIN</Text>
+        <DrawerItemList {...props} />
+      </View>
+
+      {/* Spacer to push footer to bottom */}
+      <View style={{ flex: 1 }} />
+
+      {/* Footer */}
+      <View style={drawerStyles.footer}>
+        <View style={drawerStyles.divider} />
+        <DrawerItem
+          label="Logout"
+          icon={({ color, size }) => (
+            <Ionicons name="log-out-outline" size={size} color="#FF3B30" />
+          )}
+          labelStyle={drawerStyles.logoutLabel}
+          onPress={() => {
+            Alert.alert(
+              'Logout',
+              'Are you sure you want to logout?',
+              [
+                { text: 'Cancel', style: 'cancel' },
+                { text: 'Logout', style: 'destructive', onPress: () => {
+                  // Handle logout
+                  console.log('Logout pressed');
+                }},
+              ]
+            );
+          }}
+        />
+        <Text style={drawerStyles.version}>Version 1.0.0</Text>
+      </View>
+    </DrawerContentScrollView>
+  );
+};
+
+const MainDrawer = () => {
+  return (
+    <Drawer.Navigator
+      drawerContent={(props) => <CustomDrawerContent {...props} />}
       screenOptions={{
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.gray400,
         headerStyle: {
           backgroundColor: colors.primary,
         },
@@ -683,69 +958,106 @@ const MainTabs = () => {
         headerTitleStyle: {
           fontWeight: '600',
         },
+        drawerActiveTintColor: colors.primary,
+        drawerInactiveTintColor: '#666',
+        drawerActiveBackgroundColor: '#F0F7FF',
+        drawerStyle: {
+          backgroundColor: '#FAFAFA',
+          width: 300,
+        },
+        drawerLabelStyle: {
+          fontSize: 15,
+          fontWeight: '500',
+        },
+        drawerItemStyle: {
+          borderRadius: 8,
+          marginHorizontal: 12,
+          marginVertical: 2,
+          paddingHorizontal: 8,
+        },
       }}
     >
-      <Tab.Screen
+      <Drawer.Screen
         name="Items"
         component={ItemsTab}
         options={{
           title: 'Items',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="cube" size={size} color={color} />
+          drawerIcon: ({ color, size }) => (
+            <Ionicons name="cube-outline" size={size} color={color} />
           ),
         }}
       />
-      <Tab.Screen
+      <Drawer.Screen
+        name="SalesOrders"
+        component={SalesOrdersTab}
+        options={{
+          title: 'Sales Orders',
+          drawerIcon: ({ color, size }) => (
+            <Ionicons name="receipt-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Drawer.Screen
+        name="PurchaseOrders"
+        component={PurchaseOrdersTab}
+        options={{
+          title: 'Purchase Orders',
+          drawerIcon: ({ color, size }) => (
+            <Ionicons name="cart-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Drawer.Screen
         name="Warehouses"
         component={WarehousesTab}
         options={{
           title: 'Warehouses',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="business" size={size} color={color} />
+          drawerIcon: ({ color, size }) => (
+            <Ionicons name="business-outline" size={size} color={color} />
           ),
         }}
       />
-      <Tab.Screen
+      <Drawer.Screen
         name="Locations"
         component={LocationsTab}
         options={{
           title: 'Locations',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="location" size={size} color={color} />
+          drawerIcon: ({ color, size }) => (
+            <Ionicons name="location-outline" size={size} color={color} />
           ),
         }}
       />
-      <Tab.Screen
+      <Drawer.Screen
         name="Chat"
         component={ChatTab}
         options={{
-          title: '✨ SPARK Chat',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="chatbubbles" size={size} color={color} />
+          title: 'SPARK Chat',
+          drawerIcon: ({ color, size }) => (
+            <Ionicons name="chatbubbles-outline" size={size} color={color} />
           ),
         }}
       />
-      <Tab.Screen
+      <Drawer.Screen
         name="Notifications"
         component={NotificationsTab}
         options={{
           title: 'Notifications',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="notifications" size={size} color={color} />
+          drawerIcon: ({ color, size }) => (
+            <Ionicons name="notifications-outline" size={size} color={color} />
           ),
         }}
       />
-      <Tab.Screen
+      <Drawer.Screen
         name="Profile"
         component={ProfileTab}
         options={{
           title: 'Profile',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person" size={size} color={color} />
+          drawerIcon: ({ color, size }) => (
+            <Ionicons name="person-outline" size={size} color={color} />
           ),
         }}
       />
-    </Tab.Navigator>
+    </Drawer.Navigator>
   );
 };
 
@@ -763,7 +1075,7 @@ const AppNavigator = () => {
       {!isAuthenticated ? (
         <Stack.Screen name="Login" component={LoginScreenWithProvider} />
       ) : (
-        <Stack.Screen name="Main" component={MainTabs} />
+        <Stack.Screen name="Main" component={MainDrawer} />
       )}
     </Stack.Navigator>
   );
