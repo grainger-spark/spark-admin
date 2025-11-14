@@ -39,11 +39,15 @@ A modern React Native mobile application built with Expo for inventory managemen
 
 3. **Environment Setup**
    
-   Create a `.env` file in the root directory:
+   Create a `.env` file in the root directory based on `.env.example`:
    ```env
-   # API Configuration (optional - defaults are provided)
+   # API Configuration
    API_BASE_URL=https://your-api-url.com
+   API_VERSION=v1
+   API_TIMEOUT=30000
    ```
+   
+   **Note**: `API_BASE_URL` is required. The app will not function without it.
 
 4. **Start the development server**
    ```bash
@@ -143,15 +147,19 @@ To learn more about developing your project with Expo, look at the following res
 
 ## API Integration
 
-The app integrates with a RESTful API for backend services. Configuration is handled in `src/services/config.ts`:
+The app integrates with a RESTful API for backend services. Configuration is handled in `src/services/config.ts` using environment variables:
 
 ```typescript
+import { API_BASE_URL, API_VERSION, API_TIMEOUT } from '@env';
+
 export const API_CONFIG = {
-  BASE_URL: __DEV__ ? 'https://sparkbackend.ngrok.app' : 'https://api.sparkinventory.com',
-  API_VERSION: 'v1',
-  TIMEOUT: 30000,
+  BASE_URL: API_BASE_URL,
+  API_VERSION: API_VERSION || 'v1',
+  TIMEOUT: parseInt(API_TIMEOUT || '30000'),
 };
 ```
+
+Environment variables are loaded from `.env` file in the project root. `API_BASE_URL` is required for the app to function.
 
 ## Available Scripts
 

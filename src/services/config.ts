@@ -1,9 +1,10 @@
+import { API_BASE_URL, API_VERSION, API_TIMEOUT } from '@env';
+
 // API Configuration
 export const API_CONFIG = {
-  // Use ngrok for development, production URL for release
-  BASE_URL: __DEV__ ? 'https://sparkbackend.ngrok.app' : 'https://api.sparkinventory.com',
-  API_VERSION: 'v1',
-  TIMEOUT: 30000, // 30 seconds
+  BASE_URL: API_BASE_URL,
+  API_VERSION: API_VERSION || 'v1',
+  TIMEOUT: parseInt(API_TIMEOUT || '30000'), // 30 seconds
 };
 
 export const getApiUrl = (endpoint: string): string => {
