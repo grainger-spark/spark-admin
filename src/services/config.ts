@@ -1,10 +1,8 @@
-import { API_BASE_URL, API_VERSION, API_TIMEOUT } from '@env';
-
 // API Configuration
 export const API_CONFIG = {
-  BASE_URL: API_BASE_URL,
-  API_VERSION: API_VERSION || 'v1',
-  TIMEOUT: parseInt(API_TIMEOUT || '30000'), // 30 seconds
+  BASE_URL: process.env.API_BASE_URL,
+  API_VERSION: process.env.API_VERSION || 'v1',
+  TIMEOUT: parseInt(process.env.API_TIMEOUT || '30000'), // 30 seconds
 };
 
 export const getApiUrl = (endpoint: string): string => {

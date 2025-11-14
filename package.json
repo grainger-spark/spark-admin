@@ -5,6 +5,7 @@
   "scripts": {
     "start": "expo start",
     "reset-project": "node ./scripts/reset-project.js",
+    "create-module": "ts-node scripts/create-module.ts",
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
@@ -46,6 +47,7 @@
     "@types/react": "~19.1.0",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~10.0.0",
+    "ts-node": "^10.9.2",
     "typescript": "~5.9.2"
   },
   "private": true

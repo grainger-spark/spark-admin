@@ -10,6 +10,7 @@ A modern React Native mobile application built with Expo for inventory managemen
 ## Features
 
 - 🔐 **User Authentication** - Secure login and registration system
+- 📦 **Items Management** - Full CRUD operations for inventory items
 - 💬 **Real-time Chat** - Instant messaging functionality
 - 🔔 **Push Notifications** - Stay updated with important alerts
 - 👤 **Profile Management** - User settings and preferences
@@ -161,9 +162,168 @@ export const API_CONFIG = {
 
 Environment variables are loaded from `.env` file in the project root. `API_BASE_URL` is required for the app to function.
 
+## Authentication & API Integration
+
+### Overview
+
+This app uses token-based authentication to secure API requests. The authentication flow is managed through the `AuthProvider` and requires proper token handling for all API calls.
+
+### Authentication Flow
+
+1. **Login Process**: User credentials are sent to `/api/v1/auth/login`
+2. **Token Storage**: Response contains `token` and `tenantId` stored in user context
+3. **API Requests**: All subsequent API calls include authentication headers
+4. **Token Management**: Tokens are automatically included via context
+
+### Required Headers
+
+All authenticated API requests must include:
+
+```typescript
+// Authorization header
+headers['Authorization'] = `Bearer ${token}`;
+
+// Tenant ID header (if applicable)
+headers['tenant-id'] = tenantId;
+```
+
+### Implementing Authentication in New Modules
+
+When creating new modules that require API authentication:
+
+#### 1. Update API Service Methods
+
+```typescript
+// src/services/your-module/api.ts
+export const yourApi = {
+  // Add token and tenantId parameters to all methods
+  getData: async (params?: YourParams, token?: string, tenantId?: string): Promise<YourResponse> => {
+    return apiRequest<YourResponse>('/your-endpoint', { 
+      method: 'GET', 
+      token, 
+      tenantId 
+    });
+  },
+  
+  createData: async (data: YourData, token?: string, tenantId?: string): Promise<YourResponse> => {
+    return apiRequest<YourResponse>('/your-endpoint', { 
+      method: 'POST', 
+      body: data, 
+      token, 
+      tenantId 
+    });
+  }
+};
+```
+
+#### 2. Use Auth Context in Components
+
+```typescript
+// src/modules/your-module/YourScreen.tsx
+import { useAuth } from '../../providers';
+import { yourApi } from '../../services/your-module';
+
+const YourScreen: React.FC = () => {
+  const { user } = useAuth(); // Get authenticated user
+  
+  const loadData = async () => {
+    try {
+      // Pass token and tenantId to API calls
+      const response = await yourApi.getData(params, user?.token, user?.tenantId);
+      // Handle response
+    } catch (error) {
+      if (error instanceof ApiError && error.statusCode === 401) {
+        // Handle unauthorized error
+        console.error('Authentication failed');
+      }
+    }
+  };
+};
+```
+
+#### 3. Error Handling
+
+Always handle 401 Unauthorized errors:
+
+```typescript
+try {
+  const response = await yourApi.getData(params, user?.token, user?.tenantId);
+} catch (error) {
+  if (error instanceof ApiError && error.statusCode === 401) {
+    // Redirect to login or refresh token
+    // The app will handle this automatically through AuthProvider
+  }
+}
+```
+
+### Common Issues & Solutions
+
+#### 401 Unauthorized Errors
+
+- **Cause**: Missing or invalid authentication token
+- **Solution**: Ensure `useAuth()` hook is used and `user?.token` is passed to API calls
+- **Debug**: Check console logs for authentication status
+
+#### Missing Tenant ID
+
+- **Cause**: `tenantId` not passed to multi-tenant APIs
+- **Solution**: Always pass `user?.tenantId` along with `user?.token`
+- **Debug**: Verify user object contains both `token` and `tenantId`
+
+### Example: Items Module Implementation
+
+The Items module demonstrates proper authentication implementation:
+
+```typescript
+// API service with auth parameters
+const response = await itemsApi.getItems(params, user?.token, user?.tenantId);
+
+// Component with auth context
+const { user } = useAuth();
+console.log('User auth status:', user ? 'authenticated' : 'not authenticated');
+```
+
+### Testing Authentication
+
+1. **Verify Login**: Ensure user can authenticate successfully
+2. **Check API Calls**: Monitor Network tab for Authorization headers
+3. **Test Error Cases**: Verify 401 errors are handled gracefully
+4. **Console Logging**: Use debug logs to track authentication flow
+
+### Quick Reference
+
+- **Template File**: See `docs/AUTH_TEMPLATE.md` for copy-paste examples
+- **Module Development**: Complete guide in `docs/MODULE_DEVELOPMENT.md`
+- **Module Generator**: Use `npm run create-module YourModuleName` for scaffolding
+- **Utilities**: Common patterns in `src/utils/moduleUtils.ts`
+- **Complete Example**: Review the Items module implementation
+- **API Helper**: Uses `apiRequest()` from `src/helpers/api.ts`
+- **Auth Context**: Access via `useAuth()` hook from `src/providers`
+
+### Module Development
+
+For adding new modules to the application:
+
+```bash
+# Quick module generation
+npm run create-module YourModuleName
+
+# Example: Create a products module
+npm run create-module products
+```
+
+This creates a complete module structure with:
+- Service layer with authentication
+- React components (List, Detail, Edit)
+- TypeScript interfaces
+- Proper file organization
+
+See `docs/MODULE_DEVELOPMENT.md` for detailed guide.
+
 ## Available Scripts
 
 - `npm start` - Start the development server
+- `npm run create-module` - Generate a new module with scaffolding
 - `npm run android` - Run on Android emulator/device
 - `npm run ios` - Run on iOS simulator/device  
 - `npm run web` - Run in web browser
