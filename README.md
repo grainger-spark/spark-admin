@@ -210,7 +210,7 @@ If you encounter any issues or have questions:
 
 - Open an issue on GitHub
 - Check the [Expo documentation](https://docs.expo.dev/)
-- Review our [technical documentation](#technical-documentation)
+- Review our [Project Structure](#project-structure) documentation
 
 ## Join the community
 
