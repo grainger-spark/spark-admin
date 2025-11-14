@@ -20,6 +20,13 @@ import {
   WarehousesDetailScreen 
 } from './modules/warehouses';
 import { warehouseApi, Warehouse } from './services/warehouses';
+import {
+  LocationsProvider,
+  LocationsListScreen,
+  LocationDetailScreen,
+  LocationEditScreen
+} from './modules/locations';
+import { locationApi, Location } from './services/locations';
 import { colors } from './theme';
 
 const Stack = createNativeStackNavigator();
@@ -424,6 +431,72 @@ const WarehousesTab = () => {
   );
 };
 
+const LocationsTab = () => {
+  const [currentScreen, setCurrentScreen] = React.useState<'list' | 'detail' | 'edit'>('list');
+  const [selectedLocation, setSelectedLocation] = React.useState<Location | null>(null);
+
+  const handleLocationPress = (location: Location) => {
+    setSelectedLocation(location);
+    setCurrentScreen('detail');
+  };
+
+  const handleAddLocation = () => {
+    setSelectedLocation(null);
+    setCurrentScreen('edit');
+  };
+
+  const handleEditLocation = (location: Location) => {
+    setSelectedLocation(location);
+    setCurrentScreen('edit');
+  };
+
+  const handleSaveLocation = () => {
+    setCurrentScreen('list');
+    setSelectedLocation(null);
+  };
+
+  const handleCancelEdit = () => {
+    setCurrentScreen('list');
+    setSelectedLocation(null);
+  };
+
+  const handleBack = () => {
+    setCurrentScreen('list');
+    setSelectedLocation(null);
+  };
+
+  const handleDeleteLocation = (location: Location) => {
+    setCurrentScreen('list');
+    setSelectedLocation(null);
+  };
+
+  return (
+    <LocationsProvider>
+      {currentScreen === 'list' && (
+        <LocationsListScreen
+          onLocationPress={handleLocationPress}
+          onAddLocation={handleAddLocation}
+        />
+      )}
+      {currentScreen === 'detail' && selectedLocation && (
+        <LocationDetailScreen
+          locationId={selectedLocation.id}
+          onEdit={handleEditLocation}
+          onDelete={handleDeleteLocation}
+          onBack={handleBack}
+        />
+      )}
+      {currentScreen === 'edit' && (
+        <LocationEditScreen
+          location={selectedLocation}
+          onSave={handleSaveLocation}
+          onCancel={handleCancelEdit}
+        />
+      )}
+    </LocationsProvider>
+  );
+};
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -629,6 +702,16 @@ const MainTabs = () => {
           title: 'Warehouses',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="business" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Locations"
+        component={LocationsTab}
+        options={{
+          title: 'Locations',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="location" size={size} color={color} />
           ),
         }}
       />
