@@ -1,29 +1,66 @@
 # SparkAdmin
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A modern React Native mobile application built with Expo for inventory management and administration. Features include user authentication, real-time chat, notifications, and profile management with a clean, responsive UI.
 
-## Get started
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Expo](https://img.shields.io/badge/Expo-54.0.23-000000.svg)
+![React Native](https://img.shields.io/badge/React%20Native-0.81.5-61dafb.svg)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.9.2-blue.svg)
 
-1. Install dependencies
+## Features
 
+- 🔐 **User Authentication** - Secure login and registration system
+- 💬 **Real-time Chat** - Instant messaging functionality
+- 🔔 **Push Notifications** - Stay updated with important alerts
+- 👤 **Profile Management** - User settings and preferences
+- 📱 **Cross-platform** - Works on iOS, Android, and Web
+- 🎨 **Modern UI** - Clean and intuitive interface
+- ⚡ **Performance Optimized** - Built with React Native's new architecture
+
+## Requirements
+
+- Node.js 18+ 
+- npm or yarn
+- iOS Simulator (for iOS development) or Android Studio (for Android development)
+- Expo Go app (for testing on physical devices)
+
+## Quick Start
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/your-username/SparkAdmin.git
+   cd SparkAdmin
+   ```
+
+2. **Install dependencies**
    ```bash
    npm install
    ```
 
-2. Start the app
+3. **Environment Setup**
+   
+   Create a `.env` file in the root directory:
+   ```env
+   # API Configuration (optional - defaults are provided)
+   API_BASE_URL=https://your-api-url.com
+   ```
 
+4. **Start the development server**
    ```bash
    npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+5. **Run on your preferred platform**
+   
+   In the output, you'll find options to open the app in a:
+   - [Development build](https://docs.expo.dev/develop/development-builds/introduction/)
+   - [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
+   - [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
+   - [Expo Go](https://expo.dev/go) - for quick testing on physical devices
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## Project Structure
 
-## Technical Documentation
+This project follows a modular architecture pattern with clear separation of concerns:
 
 ### General Structure
 
@@ -103,6 +140,77 @@ To learn more about developing your project with Expo, look at the following res
 
 - [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
 - [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+
+## API Integration
+
+The app integrates with a RESTful API for backend services. Configuration is handled in `src/services/config.ts`:
+
+```typescript
+export const API_CONFIG = {
+  BASE_URL: __DEV__ ? 'https://sparkbackend.ngrok.app' : 'https://api.sparkinventory.com',
+  API_VERSION: 'v1',
+  TIMEOUT: 30000,
+};
+```
+
+## Available Scripts
+
+- `npm start` - Start the development server
+- `npm run android` - Run on Android emulator/device
+- `npm run ios` - Run on iOS simulator/device  
+- `npm run web` - Run in web browser
+- `npm run lint` - Run ESLint for code quality checks
+- `npm run reset-project` - Reset to blank project template
+
+## Contributing
+
+We welcome contributions! Please follow these steps:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+### Development Guidelines
+
+- Follow the existing code structure and patterns
+- Use TypeScript for all new code
+- Ensure all pages have corresponding providers
+- Keep business logic out of UI components
+- Export named functions only (no default exports unless necessary)
+
+## Troubleshooting
+
+### Common Issues
+
+**Metro bundler not starting**
+```bash
+npx expo start --clear
+```
+
+**Dependencies not installing correctly**
+```bash
+rm -rf node_modules package-lock.json
+npm install
+```
+
+**Build fails on iOS**
+```bash
+cd ios && pod install && cd ..
+```
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Support
+
+If you encounter any issues or have questions:
+
+- Open an issue on GitHub
+- Check the [Expo documentation](https://docs.expo.dev/)
+- Review our [technical documentation](#technical-documentation)
 
 ## Join the community
 
