@@ -6,3 +6,4 @@ export * from './warehouses';
 export * from './locations';
 export * from './salesOrders';
 export * from './purchaseOrders';
+export * from './dashboard';

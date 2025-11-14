@@ -41,6 +41,7 @@ import {
   PurchaseOrderEditScreen
 } from './modules/purchaseOrders';
 import { PurchaseOrderResponse as PurchaseOrder } from './services/purchaseOrders';
+import { DashboardScreen } from './modules/dashboard';
 import { colors } from './theme';
 
 const Stack = createNativeStackNavigator();
@@ -977,6 +978,16 @@ const MainDrawer = () => {
         },
       }}
     >
+      <Drawer.Screen
+        name="Dashboard"
+        component={DashboardScreen}
+        options={{
+          title: 'Dashboard',
+          drawerIcon: ({ color, size }) => (
+            <Ionicons name="grid-outline" size={size} color={color} />
+          ),
+        }}
+      />
       <Drawer.Screen
         name="Items"
         component={ItemsTab}
