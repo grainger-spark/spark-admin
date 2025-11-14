@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "SparkAdmin",
+    "name": "Spark",
     "slug": "SparkAdmin",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -9,7 +9,9 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.sparkinventory.spark",
+      "buildNumber": "1"
     },
     "android": {
       "adaptiveIcon": {
@@ -43,6 +45,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "26235883-3423-4e58-8719-49e437ee16af"
+      }
     }
   }
 }

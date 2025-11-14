@@ -1,4 +1,4 @@
-# Welcome to your Expo app 👋
+# SparkAdmin
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
@@ -23,7 +23,69 @@ In the output, you'll find options to open the app in a
 - [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
 - [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## Technical Documentation
+
+### General Structure
+
+```
+/src
+    /components -> Project global components
+    /modules -> Modules are set of pages
+    /navigation -> Main navigation handler
+    /providers -> Providers/Context used in app
+    /services -> Api calls, transformations, types for entities
+    /helpers -> Global helpers (local storage, pagination, formatters, notifications)
+    /theme -> Theme related files
+    App.tsx -> Routes, pages and providers
+```
+
+### Module Structure
+
+- **Every module can have multiple pages inside it and every page needs to be a part of some module.**
+- Every module **needs** to have its own provider and every page **needs** to have its own provider.
+- NO logic inside pages.
+- ALL pages and providers are initialized in `App.tsx`
+
+Example:
+
+```
+📂 modules
+  📂 home
+    📂 HomeScreen
+      📂 components
+        SomeComponent.tsx
+        index.ts
+      HomeScreen.tsx
+      index.ts
+```
+
+### Services Structure
+
+- Represents entities inside our project.
+- CRUD api calls, transformations, initial values (const) and types for that entity.
+- DO NOT import anything from pages to services
+- **Should NOT contain helper functions**
+- **All services need to be imported from "services"**. (watch for index files and their export)
+
+```javascript
+import { useUsers, initialUser, User } from 'services';
+```
+
+Example:
+
+```
+📂 services
+  📂 users
+    api.ts
+    index.ts
+    transformations.ts
+    types.ts
+    const.ts
+```
+
+### Import/Export
+
+- **We do not export as default.** (unless all devs agree that we have a special case)
 
 ## Get a fresh project
 
