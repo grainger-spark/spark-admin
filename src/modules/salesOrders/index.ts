@@ -3,3 +3,4 @@ export { default as SalesOrdersScreen } from './SalesOrdersScreen/SalesOrdersScr
 export { default as SalesOrdersListScreen } from './SalesOrdersListScreen/SalesOrdersListScreen';
 export { default as SalesOrderDetailScreen } from './SalesOrderDetailScreen/SalesOrderDetailScreen';
 export { default as SalesOrderEditScreen } from './SalesOrderEditScreen/SalesOrderEditScreen';
+export { SalesOrderWorkflowScreen } from './SalesOrderWorkflowScreen';

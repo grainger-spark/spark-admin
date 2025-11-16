@@ -17,6 +17,7 @@ interface SalesOrderDetailScreenProps {
   onEdit: (order: SalesOrder) => void;
   onDelete: (order: SalesOrder) => void;
   onBack: () => void;
+  onManageWorkflow?: (order: SalesOrder) => void;
 }
 
 const SalesOrderDetailScreen: React.FC<SalesOrderDetailScreenProps> = ({
@@ -24,6 +25,7 @@ const SalesOrderDetailScreen: React.FC<SalesOrderDetailScreenProps> = ({
   onEdit,
   onDelete,
   onBack,
+  onManageWorkflow,
 }) => {
   const { state, setLoading, setError, setCurrentSalesOrder } = useSalesOrders();
   const { user } = useAuth();
@@ -105,6 +107,14 @@ const SalesOrderDetailScreen: React.FC<SalesOrderDetailScreenProps> = ({
           <Text style={styles.backButtonText}>← Back</Text>
         </TouchableOpacity>
         <View style={styles.headerActions}>
+          {onManageWorkflow && (
+            <TouchableOpacity
+              style={styles.workflowButton}
+              onPress={() => onManageWorkflow(order)}
+            >
+              <Text style={styles.workflowButtonText}>Workflow</Text>
+            </TouchableOpacity>
+          )}
           <TouchableOpacity
             style={styles.editButton}
             onPress={() => onEdit(order)}
@@ -261,6 +271,17 @@ const styles = StyleSheet.create({
   headerActions: {
     flexDirection: 'row',
     gap: 12,
+  },
+  workflowButton: {
+    backgroundColor: '#34C759',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  workflowButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
   },
   editButton: {
     backgroundColor: '#007AFF',

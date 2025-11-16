@@ -31,7 +31,8 @@ import {
   SalesOrdersProvider,
   SalesOrdersListScreen,
   SalesOrderDetailScreen,
-  SalesOrderEditScreen
+  SalesOrderEditScreen,
+  SalesOrderWorkflowScreen
 } from './modules/salesOrders';
 import { SalesOrder } from './services/salesOrders';
 import {
@@ -513,7 +514,7 @@ const LocationsTab = () => {
 };
 
 const SalesOrdersTab = () => {
-  const [currentScreen, setCurrentScreen] = React.useState<'list' | 'detail' | 'edit'>('list');
+  const [currentScreen, setCurrentScreen] = React.useState<'list' | 'detail' | 'edit' | 'workflow'>('list');
   const [selectedOrder, setSelectedOrder] = React.useState<SalesOrder | null>(null);
 
   const handleOrderPress = (order: SalesOrder) => {
@@ -551,6 +552,11 @@ const SalesOrdersTab = () => {
     setSelectedOrder(null);
   };
 
+  const handleManageWorkflow = (order: SalesOrder) => {
+    setSelectedOrder(order);
+    setCurrentScreen('workflow');
+  };
+
   return (
     <SalesOrdersProvider>
       {currentScreen === 'list' && (
@@ -565,6 +571,7 @@ const SalesOrdersTab = () => {
           onEdit={handleEditOrder}
           onDelete={handleDeleteOrder}
           onBack={handleBack}
+          onManageWorkflow={handleManageWorkflow}
         />
       )}
       {currentScreen === 'edit' && (
@@ -572,6 +579,20 @@ const SalesOrdersTab = () => {
           order={selectedOrder}
           onSave={handleSaveOrder}
           onCancel={handleCancelEdit}
+        />
+      )}
+      {currentScreen === 'workflow' && selectedOrder && (
+        <SalesOrderWorkflowScreen
+          orderId={selectedOrder.id}
+          onBack={handleBack}
+          onViewPickList={(pickListId) => {
+            // TODO: Navigate to pick list detail
+            console.log('View pick list:', pickListId);
+          }}
+          onViewShipList={(shipListId) => {
+            // TODO: Navigate to ship list detail
+            console.log('View ship list:', shipListId);
+          }}
         />
       )}
     </SalesOrdersProvider>
