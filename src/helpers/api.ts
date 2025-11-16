@@ -75,7 +75,20 @@ export const apiRequest = async <T>(
       return {} as T;
     }
 
-    return await response.json();
+    // Check if response has content
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      // If no JSON content, return empty object
+      return {} as T;
+    }
+
+    // Get response text first to check if it's empty
+    const text = await response.text();
+    if (!text || text.trim() === '') {
+      return {} as T;
+    }
+
+    return JSON.parse(text);
   } catch (error) {
     if (error instanceof ApiError) {
       throw error;
