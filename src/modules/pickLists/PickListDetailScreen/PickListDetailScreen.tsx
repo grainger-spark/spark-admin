@@ -50,6 +50,9 @@ export const PickListDetailScreen: React.FC<PickListDetailScreenProps> = ({
   const [users, setUsers] = useState<User[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
+  const [showPickingModal, setShowPickingModal] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<PickListItem | null>(null);
+  const [itemLocations, setItemLocations] = useState<any[]>([]);
 
   const loadPickList = useCallback(async () => {
     try {
@@ -108,6 +111,27 @@ export const PickListDetailScreen: React.FC<PickListDetailScreenProps> = ({
       setAssignedUser(`${currentUser.firstName} ${currentUser.lastName}`);
     } else if (currentUser?.name) {
       setAssignedUser(currentUser.name);
+    }
+  };
+
+  const handlePickItem = async (item: PickListItem) => {
+    if (!pickList || !user?.token || !user?.tenantId) return;
+    
+    setSelectedItem(item);
+    setShowPickingModal(true);
+    
+    // Load item locations
+    try {
+      const locations = await workflowApi.pickList.getItemLocations(
+        pickList.id,
+        item.id,
+        user.token,
+        user.tenantId
+      );
+      setItemLocations(locations);
+    } catch (error) {
+      console.error('Failed to load item locations:', error);
+      setItemLocations([]);
     }
   };
 
@@ -259,9 +283,8 @@ export const PickListDetailScreen: React.FC<PickListDetailScreenProps> = ({
                 key={item.id}
                 style={[styles.tableRow, isInProgress && styles.tableRowClickable]}
                 onPress={() => {
-                  if (onPickItem && isInProgress) {
-                    console.log('Picking item:', item.item.name);
-                    onPickItem(pickList, item);
+                  if (isInProgress) {
+                    handlePickItem(item);
                   }
                 }}
                 disabled={!onPickItem || !isInProgress}
@@ -375,6 +398,83 @@ export const PickListDetailScreen: React.FC<PickListDetailScreenProps> = ({
                 onPress={handleConfirmStart}
               >
                 <Text style={styles.modalStartText}>Start</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Picking Modal */}
+      <Modal
+        visible={showPickingModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowPickingModal(false)}
+      >
+        <View style={styles.pickingModalOverlay}>
+          <View style={styles.pickingModalContent}>
+            {/* Header */}
+            <View style={styles.pickingModalHeader}>
+              <Text style={styles.pickingModalTitle}>
+                {selectedItem?.item.name}
+              </Text>
+              <Text style={styles.pickingModalSubtitle}>
+                Qty picked: {selectedItem?.quantityCollected}/{selectedItem?.quantityToPick}
+              </Text>
+            </View>
+
+            {/* Locations Table */}
+            <ScrollView style={styles.pickingModalBody}>
+              <View style={styles.pickingTable}>
+                <View style={styles.pickingTableHeader}>
+                  <Text style={[styles.pickingTableHeaderText, { flex: 2 }]}>Location</Text>
+                  <Text style={[styles.pickingTableHeaderText, { flex: 1.5 }]}>Tracking</Text>
+                  <Text style={[styles.pickingTableHeaderText, { flex: 1, textAlign: 'center' }]}>Available</Text>
+                  <Text style={[styles.pickingTableHeaderText, { flex: 1, textAlign: 'center' }]}>Picked</Text>
+                  <View style={{ width: 80 }} />
+                </View>
+
+                {itemLocations.length > 0 ? (
+                  itemLocations.map((location, index) => (
+                    <View key={index} style={styles.pickingTableRow}>
+                      <Text style={[styles.pickingTableCell, { flex: 2 }]}>
+                        {location.location?.name || 'Default location'}
+                      </Text>
+                      <Text style={[styles.pickingTableCell, { flex: 1.5 }]}>
+                        {location.trackingSerial?.[0] || '—'}
+                      </Text>
+                      <Text style={[styles.pickingTableCell, { flex: 1, textAlign: 'center' }]}>
+                        {location.quantityAvailable || 0}
+                      </Text>
+                      <Text style={[styles.pickingTableCell, { flex: 1, textAlign: 'center' }]}>
+                        {location.quantityPicked || 0}
+                      </Text>
+                      <View style={styles.pickingActions}>
+                        <TouchableOpacity style={styles.pickingActionButton}>
+                          <Text style={styles.pickingActionIcon}>📦</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.pickingActionButton}>
+                          <Text style={styles.pickingActionIcon}>↩️</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  ))
+                ) : (
+                  <View style={styles.pickingEmptyState}>
+                    <ActivityIndicator size="large" color="#00A3E0" />
+                    <Text style={styles.pickingEmptyText}>Loading locations...</Text>
+                  </View>
+                )}
+              </View>
+            </ScrollView>
+
+            {/* Footer */}
+            <View style={styles.pickingModalFooter}>
+              <TouchableOpacity
+                style={styles.pickingCloseButton}
+                onPress={() => setShowPickingModal(false)}
+              >
+                <Text style={styles.pickingCloseText}>Close</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -755,5 +855,101 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     color: '#FFFFFF',
+  },
+  // Picking Modal Styles
+  pickingModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  pickingModalContent: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: '80%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  pickingModalHeader: {
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
+  },
+  pickingModalTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#000',
+    marginBottom: 8,
+  },
+  pickingModalSubtitle: {
+    fontSize: 16,
+    color: '#666',
+  },
+  pickingModalBody: {
+    maxHeight: 400,
+  },
+  pickingTable: {
+    padding: 16,
+  },
+  pickingTableHeader: {
+    flexDirection: 'row',
+    paddingVertical: 12,
+    borderBottomWidth: 2,
+    borderBottomColor: '#E0E0E0',
+  },
+  pickingTableHeaderText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#666',
+  },
+  pickingTableRow: {
+    flexDirection: 'row',
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+    alignItems: 'center',
+  },
+  pickingTableCell: {
+    fontSize: 14,
+    color: '#000',
+  },
+  pickingActions: {
+    flexDirection: 'row',
+    width: 80,
+    justifyContent: 'space-around',
+  },
+  pickingActionButton: {
+    padding: 4,
+  },
+  pickingActionIcon: {
+    fontSize: 20,
+  },
+  pickingEmptyState: {
+    padding: 40,
+    alignItems: 'center',
+  },
+  pickingEmptyText: {
+    marginTop: 12,
+    fontSize: 14,
+    color: '#999',
+  },
+  pickingModalFooter: {
+    padding: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#E0E0E0',
+  },
+  pickingCloseButton: {
+    backgroundColor: '#F0F0F0',
+    paddingVertical: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  pickingCloseText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#666',
   },
 });
