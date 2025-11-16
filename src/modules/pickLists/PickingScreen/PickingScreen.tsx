@@ -9,15 +9,15 @@ import {
   Alert,
   TextInput,
 } from 'react-native';
-import { usePickList } from './PickListProvider';
-import { useAuth } from '../../providers';
+import { usePickList } from '../PickListsScreen/PickListsScreenProvider';
+import { useAuth } from '../../../providers';
 import {
   workflowApi,
   PickList,
   PickListItem,
   PickListItemLocation,
   formatTrackingSerial,
-} from '../../services/salesOrders';
+} from '../../../services/salesOrders';
 
 interface PickingScreenProps {
   pickList: PickList;

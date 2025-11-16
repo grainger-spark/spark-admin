@@ -4,7 +4,7 @@ import {
   ShipListListParams,
   PagedShipListsResponse,
   ShipListPackage,
-} from '../../services/salesOrders';
+} from '../../../services/salesOrders';
 
 interface ShipListState {
   shipLists: ShipList[];

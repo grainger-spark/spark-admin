@@ -8,15 +8,15 @@ import {
   RefreshControl,
   ActivityIndicator,
 } from 'react-native';
-import { useShipList } from './ShipListProvider';
-import { useAuth } from '../../providers';
+import { useShipList } from './ShipListsScreenProvider';
+import { useAuth } from '../../../providers';
 import {
   workflowApi,
   ShipList,
   getShipListStatusConfig,
   getPriorityConfig,
   formatDateTime,
-} from '../../services/salesOrders';
+} from '../../../services/salesOrders';
 
 interface ShipListsScreenProps {
   onShipListPress: (shipList: ShipList) => void;

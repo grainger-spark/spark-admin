@@ -8,8 +8,8 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import { usePickList } from './PickListProvider';
-import { useAuth } from '../../providers';
+import { usePickList } from '../PickListsScreen/PickListsScreenProvider';
+import { useAuth } from '../../../providers';
 import {
   workflowApi,
   PickList,
@@ -19,7 +19,7 @@ import {
   getPickListStatusConfig,
   formatDateTime,
   calculatePickListProgress,
-} from '../../services/salesOrders';
+} from '../../../services/salesOrders';
 
 interface PickListDetailScreenProps {
   pickListId: string;

@@ -5,7 +5,7 @@ import {
   PagedPickListsResponse,
   PickListItem,
   PickListItemLocation,
-} from '../../services/salesOrders';
+} from '../../../services/salesOrders';
 
 // ============================================================================
 // STATE INTERFACE

@@ -8,15 +8,15 @@ import {
   RefreshControl,
   ActivityIndicator,
 } from 'react-native';
-import { usePickList } from './PickListProvider';
-import { useAuth } from '../../providers';
+import { usePickList } from './PickListsScreenProvider';
+import { useAuth } from '../../../providers';
 import {
   workflowApi,
   PickList,
   getPickListStatusConfig,
   getPriorityConfig,
   formatDateTime,
-} from '../../services/salesOrders';
+} from '../../../services/salesOrders';
 
 interface PickListsScreenProps {
   onPickListPress: (pickList: PickList) => void;

@@ -10,8 +10,8 @@ import {
   TextInput,
   Modal,
 } from 'react-native';
-import { useShipList } from './ShipListProvider';
-import { useAuth } from '../../providers';
+import { useShipList } from '../ShipListsScreen/ShipListsScreenProvider';
+import { useAuth } from '../../../providers';
 import {
   workflowApi,
   ShipList,
@@ -23,7 +23,7 @@ import {
   formatDimensions,
   formatWeight,
   calculateShipListProgress,
-} from '../../services/salesOrders';
+} from '../../../services/salesOrders';
 
 interface ShipListDetailScreenProps {
   shipListId: string;
