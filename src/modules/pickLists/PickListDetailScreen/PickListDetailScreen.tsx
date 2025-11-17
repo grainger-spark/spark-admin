@@ -8,7 +8,6 @@ import {
   ActivityIndicator,
   Alert,
   Modal,
-  TextInput,
 } from 'react-native';
 import { usePickList } from '../PickListsScreen/PickListsScreenProvider';
 import { useAuth } from '../../../providers';
@@ -16,7 +15,6 @@ import {
   workflowApi,
   PickList,
   PickListItem,
-  PickListStatus,
   getPickListStatusConfig,
   formatDateTime,
 } from '../../../services/salesOrders';
@@ -31,18 +29,23 @@ interface User {
 
 interface PickListDetailScreenProps {
   pickListId: string;
+  salesOrderId?: string;
   onBack: () => void;
   onPickItem?: (pickList: PickList, item: PickListItem) => void;
+  onNavigateToShipList?: (shipListId: string) => void;
 }
 
 export const PickListDetailScreen: React.FC<PickListDetailScreenProps> = ({
   pickListId,
+  salesOrderId: propSalesOrderId,
   onBack,
   onPickItem,
+  onNavigateToShipList,
 }) => {
   const { state, setLoading, setError, setCurrentPickList } = usePickList();
   const { user } = useAuth();
   const [pickList, setPickList] = useState<PickList | null>(null);
+  const [navBar, setNavBar] = useState<any>(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [assignedUser, setAssignedUser] = useState('');
@@ -70,6 +73,21 @@ export const PickListDetailScreen: React.FC<PickListDetailScreenProps> = ({
       );
       setPickList(data);
       setCurrentPickList(data);
+
+      // Load navigation bar to get ship list IDs
+      const salesOrderId = data.salesOrderId || propSalesOrderId;
+      if (salesOrderId) {
+        try {
+          const navBarData = await workflowApi.status.getNavigationBar(
+            salesOrderId,
+            user.token,
+            user.tenantId
+          );
+          setNavBar(navBarData);
+        } catch (navError) {
+          console.error('Failed to load navigation bar:', navError);
+        }
+      }
     } catch (error) {
       console.error('Failed to load pick list:', error);
       setError(error instanceof Error ? error.message : 'Failed to load pick list');
@@ -135,6 +153,56 @@ export const PickListDetailScreen: React.FC<PickListDetailScreenProps> = ({
     }
   };
 
+  const handlePickFromLocation = async (location: any) => {
+    if (!pickList || !selectedItem || !user?.token || !user?.tenantId) return;
+
+    try {
+      await workflowApi.pickList.pickItem(
+        pickList.id,
+        selectedItem.id,
+        {
+          itemId: selectedItem.item.id,
+          locationId: location.location?.id || '',
+          quantity: 1, // Pick 1 at a time
+        },
+        user.token,
+        user.tenantId
+      );
+
+      // Reload locations and pick list
+      await handlePickItem(selectedItem);
+      await loadPickList();
+    } catch (error) {
+      console.error('Failed to pick item:', error);
+      Alert.alert('Error', error instanceof Error ? error.message : 'Failed to pick item');
+    }
+  };
+
+  const handleReturnToLocation = async (location: any) => {
+    if (!pickList || !selectedItem || !user?.token || !user?.tenantId) return;
+
+    try {
+      await workflowApi.pickList.unpickItem(
+        pickList.id,
+        selectedItem.id,
+        {
+          itemId: selectedItem.item.id,
+          locationId: location.location?.id || '',
+          quantity: 1, // Return 1 at a time
+        },
+        user.token,
+        user.tenantId
+      );
+
+      // Reload locations and pick list
+      await handlePickItem(selectedItem);
+      await loadPickList();
+    } catch (error) {
+      console.error('Failed to return item:', error);
+      Alert.alert('Error', error instanceof Error ? error.message : 'Failed to return item');
+    }
+  };
+
   const handleConfirmStart = async () => {
     if (!pickList || !user?.token || !user?.tenantId) return;
 
@@ -153,6 +221,50 @@ export const PickListDetailScreen: React.FC<PickListDetailScreenProps> = ({
     } catch (error) {
       console.error('Failed to start pick list:', error);
       Alert.alert('Error', error instanceof Error ? error.message : 'Failed to start pick list');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleFinish = async () => {
+    if (!pickList || !user?.token || !user?.tenantId) return;
+
+    // Check if all items are fully picked
+    const allItemsPicked = pickList.items.every(
+      item => item.quantityPicked >= item.quantityToPick
+    );
+
+    if (!allItemsPicked) {
+      Alert.alert(
+        'Incomplete Picking',
+        'Not all items have been fully picked. Do you want to finish with partial completion?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Finish Anyway', onPress: confirmFinish }
+        ]
+      );
+    } else {
+      confirmFinish();
+    }
+  };
+
+  const confirmFinish = async () => {
+    if (!pickList || !user?.token || !user?.tenantId) return;
+
+    try {
+      setActionLoading(true);
+      
+      const updated = await workflowApi.pickList.completePickList(
+        pickList.id,
+        user.token,
+        user.tenantId
+      );
+      setPickList(updated);
+      setCurrentPickList(updated);
+      Alert.alert('Success', 'Pick list completed successfully!');
+    } catch (error) {
+      console.error('Failed to complete pick list:', error);
+      Alert.alert('Error', error instanceof Error ? error.message : 'Failed to complete pick list');
     } finally {
       setActionLoading(false);
     }
@@ -211,6 +323,7 @@ export const PickListDetailScreen: React.FC<PickListDetailScreenProps> = ({
   const statusStr = String(pickList.status).toLowerCase();
   const isCreated = statusStr === 'pending' || statusStr === 'created';
   const isInProgress = statusStr === 'inprogress' || statusStr === 'in progress';
+  const isCompleted = statusStr === 'completed';
 
   return (
     <View style={styles.container}>
@@ -317,17 +430,29 @@ export const PickListDetailScreen: React.FC<PickListDetailScreenProps> = ({
       </ScrollView>
 
       {/* Fixed Bottom Action Button */}
-      {(isCreated || isInProgress) && (
+      {(isCreated || isInProgress || isCompleted) && (
         <View style={styles.bottomBar}>
           <TouchableOpacity
-            style={[styles.startButton, actionLoading && styles.buttonDisabled]}
-            onPress={isCreated ? handleStart : () => Alert.alert('Finish', 'Finish functionality coming soon')}
-            disabled={actionLoading}
+            style={[styles.startButton, (actionLoading || (isCompleted && !navBar?.shipListIds?.[0])) && styles.buttonDisabled]}
+            onPress={() => {
+              if (isCreated) {
+                handleStart();
+              } else if (isInProgress) {
+                handleFinish();
+              } else if (isCompleted && navBar?.shipListIds?.[0] && onNavigateToShipList) {
+                onNavigateToShipList(navBar.shipListIds[0]);
+              } else if (isCompleted) {
+                Alert.alert('No Ship List', 'No ship list found for this pick list.');
+              }
+            }}
+            disabled={actionLoading || (isCompleted && !navBar?.shipListIds?.[0])}
           >
             {actionLoading ? (
               <ActivityIndicator color="#FFFFFF" size="small" />
             ) : (
-              <Text style={styles.startButtonText}>{isCreated ? 'Start' : 'Finish'}</Text>
+              <Text style={styles.startButtonText}>
+                {isCreated ? 'Start' : isInProgress ? 'Finish' : 'Go to Shipping'}
+              </Text>
             )}
           </TouchableOpacity>
         </View>
@@ -450,10 +575,16 @@ export const PickListDetailScreen: React.FC<PickListDetailScreenProps> = ({
                         {location.quantityPicked || 0}
                       </Text>
                       <View style={styles.pickingActions}>
-                        <TouchableOpacity style={styles.pickingActionButton}>
+                        <TouchableOpacity 
+                          style={styles.pickingActionButton}
+                          onPress={() => handlePickFromLocation(location)}
+                        >
                           <Text style={styles.pickingActionIcon}>📦</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.pickingActionButton}>
+                        <TouchableOpacity 
+                          style={styles.pickingActionButton}
+                          onPress={() => handleReturnToLocation(location)}
+                        >
                           <Text style={styles.pickingActionIcon}>↩️</Text>
                         </TouchableOpacity>
                       </View>

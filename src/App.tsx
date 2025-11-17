@@ -38,6 +38,10 @@ import {
   PickListProvider,
   PickListDetailScreen
 } from './modules/pickLists';
+import {
+  ShipListProvider,
+  ShipListDetailScreen
+} from './modules/shipLists';
 import { SalesOrder } from './services/salesOrders';
 import {
   PurchaseOrdersProvider,
@@ -518,9 +522,10 @@ const LocationsTab = () => {
 };
 
 const SalesOrdersTab = () => {
-  const [currentScreen, setCurrentScreen] = React.useState<'list' | 'detail' | 'edit' | 'workflow' | 'pickList'>('list');
+  const [currentScreen, setCurrentScreen] = React.useState<'list' | 'detail' | 'edit' | 'workflow' | 'pickList' | 'shipList'>('list');
   const [selectedOrder, setSelectedOrder] = React.useState<SalesOrder | null>(null);
   const [selectedPickListId, setSelectedPickListId] = React.useState<string | null>(null);
+  const [selectedShipListId, setSelectedShipListId] = React.useState<string | null>(null);
 
   const handleOrderPress = (order: SalesOrder) => {
     setSelectedOrder(order);
@@ -572,6 +577,16 @@ const SalesOrdersTab = () => {
     setCurrentScreen('detail');
   };
 
+  const handleBackFromShipList = () => {
+    setSelectedShipListId(null);
+    // Go back to workflow if we came from there, otherwise to pick list
+    if (currentScreen === 'shipList' && selectedOrder) {
+      setCurrentScreen('workflow');
+    } else {
+      setCurrentScreen('pickList');
+    }
+  };
+
   return (
     <SalesOrdersProvider>
       {currentScreen === 'list' && (
@@ -603,8 +618,8 @@ const SalesOrdersTab = () => {
           onBack={handleBack}
           onViewPickList={handleNavigateToPickList}
           onViewShipList={(shipListId) => {
-            // TODO: Navigate to ship list detail
-            console.log('View ship list:', shipListId);
+            setSelectedShipListId(shipListId);
+            setCurrentScreen('shipList');
           }}
         />
       )}
@@ -612,13 +627,22 @@ const SalesOrdersTab = () => {
         <PickListProvider>
           <PickListDetailScreen
             pickListId={selectedPickListId}
+            salesOrderId={selectedOrder?.id}
             onBack={handleBackFromPickList}
-            onPickItem={(pickList, item) => {
-              // TODO: Implement picking modal
-              Alert.alert('Pick Item', `Picking: ${item.item.name}\nQuantity to pick: ${item.quantityToPick}`);
+            onNavigateToShipList={(shipListId) => {
+              setSelectedShipListId(shipListId);
+              setCurrentScreen('shipList');
             }}
           />
         </PickListProvider>
+      )}
+      {currentScreen === 'shipList' && selectedShipListId && (
+        <ShipListProvider>
+          <ShipListDetailScreen
+            shipListId={selectedShipListId}
+            onBack={handleBackFromShipList}
+          />
+        </ShipListProvider>
       )}
     </SalesOrdersProvider>
   );

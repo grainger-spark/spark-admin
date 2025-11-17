@@ -107,9 +107,11 @@ export const ShipListDetailScreen: React.FC<ShipListDetailScreenProps> = ({
       setShipList(updated);
       updateShipList(updated);
       Alert.alert('Success', 'Packing completed');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to finish packing:', error);
-      Alert.alert('Error', error instanceof Error ? error.message : 'Failed to finish packing');
+      console.error('Error details:', JSON.stringify(error, null, 2));
+      const errorMessage = error?.message || error?.error || 'Failed to finish packing';
+      Alert.alert('Error', errorMessage);
     } finally {
       setActionLoading(false);
     }
