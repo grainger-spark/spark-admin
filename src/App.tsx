@@ -51,6 +51,7 @@ import {
 } from './modules/purchaseOrders';
 import { PurchaseOrderResponse as PurchaseOrder } from './services/purchaseOrders';
 import { DashboardScreen } from './modules/dashboard';
+import { HomeScreen } from './modules/home';
 import { colors } from './theme';
 
 const Stack = createNativeStackNavigator();
@@ -1020,6 +1021,7 @@ const CustomDrawerContent = (props: any) => {
 const MainDrawer = () => {
   return (
     <Drawer.Navigator
+      initialRouteName="Home"
       drawerContent={(props) => <CustomDrawerContent {...props} />}
       screenOptions={{
         headerStyle: {
@@ -1048,6 +1050,16 @@ const MainDrawer = () => {
         },
       }}
     >
+      <Drawer.Screen
+        name="Home"
+        component={HomeScreen}
+        options={{
+          title: 'Home',
+          drawerIcon: ({ color, size }) => (
+            <Ionicons name="home-outline" size={size} color={color} />
+          ),
+        }}
+      />
       <Drawer.Screen
         name="Dashboard"
         component={DashboardScreen}
